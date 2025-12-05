@@ -1,1 +1,1 @@
-# jinrosangdam-streamlit
+# jinrosangdam-streamli
