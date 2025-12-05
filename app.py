@@ -4,13 +4,15 @@ from google import genai
 from google.genai import errors
 
 # ==============================================================================
-# 0. 진로 상담사 역할을 위한 시스템 지침 설정 (가장 중요한 부분!)
+# 0. 코딩 비서 역할을 위한 시스템 지침 설정 (디버깅 기능 강화!)
 # ==============================================================================
 SYSTEM_INSTRUCTION = (
-    "당신은 친절하고 전문적인 10대 진로 상담사입니다. 사용자는 청소년이므로, "
-    "쉽고 긍정적이며 구체적인 조언을 제공해야 합니다. "
-    "꿈과 진로, 공부 방법, 적성 찾기 등에 대해 격려하며 도움을 주세요. "
-    "어려운 전문 용어는 피하고, 항상 희망적인 어조로 답변하세요."
+    "당신은 구글 코랩(Colab) 환경에 최적화된 전문 코딩 비서입니다. "
+    "사용자는 파이썬 초보자부터 숙련자까지 다양합니다. "
+    "사용자의 질문에 대해 명확하고 간결하며 실행 가능한 파이썬 코드를 제공해야 합니다. "
+    "사용자가 파이썬 코드를 제시하면, 해당 코드의 오류(SyntaxError, NameError, TypeError 등)를 진단하고, 오류가 난 이유와 함께 정확하고 친절한 해결책을 제시하여 코드를 고쳐주세요. 디버깅이 주요 업무 중 하나입니다. " # <--- 디버깅 지침 강화
+    "코드 설명은 주석과 함께 제공하며, 모든 코드는 구글 코랩 환경에서 바로 실행 가능하도록 작성해야 합니다. "
+    "사용자가 요청하지 않는 한, 불필요한 서론이나 결론 없이 핵심적인 코드와 설명을 제공하세요."
 )
 
 # 1. API 키 설정 및 클라이언트 초기화
@@ -34,16 +36,16 @@ except Exception as e:
 MODEL_NAME = "gemini-2.5-flash"
 
 # Streamlit UI 설정 (제목 변경)
-st.set_page_config(page_title="진로 상담 제미나이 챗봇", layout="centered")
-st.title("✨ 10대 진로 상담 챗봇: 진로 제미나이")
-st.caption("여러분의 꿈과 적성을 찾아주는 인공지능 진로 상담사입니다.")
+st.set_page_config(page_title="코랩 코딩 비서 챗봇", layout="centered")
+st.title("💻 구글 코랩 코딩 비서: 제미나이")
+st.caption("파이썬 코드 작성, 설명, **오류 수정**을 도와주는 전문 AI 비서입니다.")
 st.divider()
 
 # 2. 채팅 기록 초기화
 if "messages" not in st.session_state:
     # 환영 메시지 변경
     st.session_state.messages = [
-        {"role": "assistant", "content": "안녕하세요! 저는 여러분의 꿈과 적성을 찾아주는 친절한 진로 상담사 제미나이입니다. 어떤 고민이 있나요? 무엇이든 이야기해주세요!"}
+        {"role": "assistant", "content": "안녕하세요! 저는 코랩 환경에 최적화된 코딩 비서 제미나이입니다. 어떤 파이썬 코드가 필요하거나, **오류가 난 코드를 보여주시면 바로 고쳐드릴게요!**"}
     ]
 
 # 3. 채팅 기록 표시
@@ -52,7 +54,7 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 # 4. 사용자 입력 처리
-if prompt := st.chat_input("진로, 적성, 공부 방법에 대해 질문하세요..."):
+if prompt := st.chat_input("파이썬 코드를 요청하거나 오류를 물어보세요..."):
     # 4-1. 사용자 메시지 기록 및 화면 표시
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
@@ -77,7 +79,7 @@ if prompt := st.chat_input("진로, 적성, 공부 방법에 대해 질문하세
             response_stream = client.models.generate_content_stream(
                 model=MODEL_NAME,
                 contents=history,
-                config={"system_instruction": SYSTEM_INSTRUCTION}  # <--- 이 부분이 추가되었습니다!
+                config={"system_instruction": SYSTEM_INSTRUCTION}  # <--- 시스템 지침 사용
             )
 
             for chunk in response_stream:
